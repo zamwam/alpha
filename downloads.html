@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Download Hub - Project Alpha</title>
+<meta name="description" content="GitHub repo download hub for Project Alpha.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="downloads.html">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="nav.css">
+<link rel="stylesheet" href="main.css">
+</head>
+<body>
+<nav class="top-nav">
+  <div class="nav-brand"><a href="index.html">Project Alpha</a></div>
+  <input type="checkbox" id="nav-toggle" class="nav-toggle">
+  <label for="nav-toggle" class="nav-toggle-label">☰</label>
+  <ul class="nav-links">
+    <li id="navUserText" style="color:#38bdf8; display:none; font-weight:bold;"></li>
+    <li><button id="logoutBtn" class="cta-btn" style="display:none;">Logout</button></li>
+    <li><a href="index.html"><span class="nav-icon">🏠</span>Home</a></li>
+    <li><a href="about.html"><span class="nav-icon">ℹ️</span>About</a></li>
+    <li><a href="sources.html"><span class="nav-icon">🎵</span>Music</a></li>
+    <li><a href="downloads.html"><span class="nav-icon">📦</span>Downloads</a></li>
+    <li><a href="terms-of-service.html"><span class="nav-icon">📜</span>Terms</a></li>
+    <li><a href="privacy-policy.html"><span class="nav-icon">🔒</span>Privacy</a></li>
+    <li><a href="mailto:support@projectalpha.example"><span class="nav-icon">✉️</span>Support</a></li>
+    <li><a href="tel:+1234567890"><span class="nav-icon">☎️</span>+1-234-567-890</a></li>
+  </ul>
+</nav>
+<main>
+  <h1>Download Hub</h1>
+    <p>
+    Browse and download compressed repository files from a curated index of GitHub sources. 
+    Includes projects from KAXXX0, zamwam, zennax, and xkxng, all accessible in one place without manual searching.
+    </p>
+  <div class="card">
+    <button id="loadReposBtn" class="cta-btn">Load GitHub Repositories</button>
+  </div>
+  <div class="card">
+    <div id="repoLoading">Not loaded.</div>
+    <ul id="repoList" style="list-style:none; padding:0; margin-top:12px;"></ul>
+  </div>
+</main>
+<script>
+const users = ['KAXXX0','zamwam','zennax', 'XKXNG'];
+const repoList = document.getElementById('repoList');
+const repoLoading = document.getElementById('repoLoading');
+const loadReposBtn = document.getElementById('loadReposBtn');
+
+function listRepos(repos) {
+  repoList.innerHTML = '';
+  repos.forEach((repo) => {
+    const li = document.createElement('li');
+    li.className = 'card';
+    li.innerHTML = `<strong>${repo.full_name}</strong><br>${repo.description || 'No description'}<br>⭐ ${repo.stargazers_count} | forks: ${repo.forks_count} <br>
+      <a class='cta-btn' style='margin-top:6px; display:inline-block;' href='${repo.html_url}' target='_blank'>Open repo</a>
+      <a class='cta-btn' style='margin-top:6px; display:inline-block; margin-left:8px;' href='${repo.html_url}/archive/refs/heads/${repo.default_branch}.zip' target='_blank'>Download ZIP</a>
+      <a class='cta-btn' style='margin-top:6px; display:inline-block; margin-left:8px;' href='https://github.com/${repo.full_name}.git' target='_blank'>Clone URL</a>`;
+    repoList.appendChild(li);
+  });
+}
+
+loadReposBtn.addEventListener('click', async () => {
+  repoLoading.textContent = 'Loading repos...';
+  repoList.innerHTML = '';
+  let all = [];
+  for (const user of users) {
+    try {
+      const res = await fetch(`https://api.github.com/users/${user}/repos?per_page=100`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const repos = await res.json();
+      all = all.concat(repos.map((r) => ({...r, user}))); 
+    } catch (err) {
+      const m = document.createElement('div');
+      m.textContent = `Failed to load ${user}: ${err.message}`;
+      repoList.appendChild(m);
+    }
+  }
+  if (all.length === 0) {
+    repoLoading.textContent = 'No repos found, maybe rate limit or no internet.';
+    return;
+  }
+  repoLoading.textContent = `Loaded ${all.length} repos from ${users.join(', ')}`;
+  listRepos(all.sort((a,b)=>b.stargazers_count-a.stargazers_count));
+});
+
+function isAuthenticated(){ return localStorage.getItem('isAuthenticated') === 'true'; }
+function getAuthUser(){ return localStorage.getItem('authUser') || ''; }
+function logout(){ localStorage.removeItem('isAuthenticated'); localStorage.removeItem('authUser'); window.location='index.html'; }
+function requireAuth(){ if (!isAuthenticated()) { window.location='index.html'; } }
+function refreshNav(){
+  const navUserText = document.getElementById('navUserText');
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (isAuthenticated()) {
+    navUserText.textContent = `👋 ${getAuthUser()}`;
+    navUserText.style.display = 'inline-block';
+    logoutBtn.style.display = 'inline-block';
+  } else {
+    navUserText.style.display = 'none';
+    logoutBtn.style.display = 'none';
+  }
+}
+
+requireAuth();
+refreshNav();
+document.getElementById('logoutBtn').addEventListener('click', logout);
+</script>
+
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div>
+      <h4 class="card">Project Alpha</h4><br><br>
+      <a>A secure, centralized portal for accessing all content.</a>
+      <!-- <p>Emblems: ★ ✪ ✔</p> -->
+    </div>
+    <div>
+      <h4 class="card">Quick Links</h4><br><br>
+      <a href="index.html">Home</a><br><br>
+      <a href="about.html">About</a><br><br>
+      <a href="sources.html">Music</a><br><br>
+      <a href="downloads.html">Downloads</a><br><br>
+      <a href="terms-of-service.html">Terms</a><br><br>
+      <a href="privacy-policy.html">Privacy</a><br><br>
+    </div>
+    <div>
+      <h4 class="card">Support</h4><br>
+      <p>✉️ <a href="mailto:support@projectalpha.example">support@projectalpha.example</a></p>
+      <p>☎️ <a href="tel:+1234567890">+1-234-567-890</a></p>
+    </div>
+  </div>
+  <small>© 2026 Project Alpha • Auth Persists Until Logout • Secure Session ✪</small>
+</footer>
+</body>
+</html>

@@ -1,0 +1,20 @@
+/* Additional theme styles for Project Alpha */
+.theme-dark {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.theme-accent {
+  border-color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #1e40af, #2563eb);
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(30, 64, 175, 0.4);
+}

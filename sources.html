@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Music Sources - Project Alpha</title>
+  <meta name="description" content="Music player and API explorer for Project Alpha.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="sources.html">
+  <link rel="stylesheet" href="nav.css">
+  <link rel="stylesheet" href="main.css">
+  <style>
+    body { font-family: Arial, sans-serif; background:#121212; color:#eee; margin:0; padding:0; overflow-x:hidden; }
+        .popText { animation: bounceText 0.9s ease infinite alternate; }
+    @keyframes bounceText { from { transform: translateY(0); } to { transform: translateY(-4px); } }
+    .pulseCard { animation: pulseBorder 2.2s ease infinite; }
+    @keyframes pulseBorder { 0% { box-shadow: 0 0 0 0 rgba(56,189,248,0.4);} 70% { box-shadow:0 0 0 16px rgba(56,189,248,0);} 100% { box-shadow:0 0 0 0 rgba(56,189,248,0);} }
+    header { background:#181818; padding:12px 18px; }
+    header nav a { margin-right:10px; color:#fff; text-decoration:none; }
+    main { padding:20px; max-width:1024px; margin:auto; }
+    .player { display:flex; flex-direction:column; gap:10px; }
+    #playlist { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:6px; }
+    #playlist li { background:#212121; border:1px solid #333; padding:8px 10px; border-radius:6px; cursor:pointer; }
+    #playlist li.active { background:#1e88e5; color:#fff; }
+    #playlist li:hover { background:#2d2d2d; }
+  </style>
+  <script>
+    // Immediately hide auth modal if already authenticated to prevent flash
+    if (localStorage.getItem('isAuthenticated') === 'true') {
+      document.addEventListener('DOMContentLoaded', () => {
+        const modal = document.getElementById('authModal');
+        if (modal) modal.style.display = 'none';
+      });
+    }
+  </script>
+</head>
+<body>
+  <div id="authModal" class="auth-modal">
+    <div class="auth-box">
+      <h2>Project Alpha Login</h2>
+      <p>Enter your username/password to continue.</p>
+      <input id="authUser" type="text" placeholder="Username" />
+      <input id="authPass" type="password" placeholder="Password" />
+      <button id="authSubmit" class="cta-btn">Login</button>
+      <div id="authMessage" style="margin-top:8px;color:#fee;min-height:22px;"></div>
+      <small>Allowed users: juicelord/admin/guest</small>
+    </div>
+  </div>
+
+  <nav class="top-nav">
+    <div class="nav-brand"><a href="index.html">Project Alpha</a></div>
+    <input type="checkbox" id="nav-toggle" class="nav-toggle">
+    <label for="nav-toggle" class="nav-toggle-label">☰</label>
+    <ul class="nav-links">
+      <li id="navUserText" style="color:#38bdf8; display:none; font-weight:bold;"></li>
+      <li><button id="logoutBtn" class="cta-btn" style="display:none;">Logout</button></li>
+      <li><a href="index.html"><span class="nav-icon">🏠</span>Home</a></li>
+      <li><a href="about.html"><span class="nav-icon">ℹ️</span>About</a></li>
+      <li><a href="sources.html"><span class="nav-icon">🎵</span>Music</a></li>
+      <li><a href="downloads.html"><span class="nav-icon">📦</span>Downloads</a></li>
+      <li><a href="terms-of-service.html"><span class="nav-icon">📜</span>Terms</a></li>
+      <li><a href="privacy-policy.html"><span class="nav-icon">🔒</span>Privacy</a></li>
+      <li><a href="mailto:support@projectalpha.example"><span class="nav-icon">✉️</span>Support</a></li>
+      <li><a href="tel:+1234567890"><span class="nav-icon">☎️</span>+1-234-567-890</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h1>:placeholder</h1>
+    <p>:placeholder</p>
+
+    <section class="player">
+      <div><strong>Now playing:</strong> <span id="currentTrack">none</span></div>
+      <audio id="audioPlayer" controls preload="none"></audio>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
+        <button id="prevTrack" class="cta-btn">Previous</button>
+        <button id="nextTrack" class="cta-btn">Next</button>
+        <button id="randomToggle" class="cta-btn">Random Play: Off</button>
+      </div>
+      <label for="playlistSearch" style="margin-top:12px; display:block;">Filter tracks:</label>
+      <input id="playlistSearch" type="text" placeholder="Type to filter track names" style="width:100%; margin-bottom:8px;" />
+      <label for="playlistSelect">Choose a track (click or select):</label>
+      <select id="playlistSelect" style="width:100%; margin-bottom:12px;"></select>
+      <ul id="playlist"></ul>
+    </section>
+
+    <section class="card" style="margin-top:24px;">
+      <h2>Juice WRLD API Explorer</h2>
+      <div class="grid" style="grid-template-columns:1fr 1fr; gap:12px; margin-top:10px;">
+        <div class="card">
+          <h3>Search Songs</h3>
+          <input id="songSearchQuery" type="text" placeholder="e.g. lucid dreams" autocomplete="off" style="width:100%;" />
+          <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+            <button id="songSearchBtn" class="cta-btn">Search</button>
+            <button id="loadMoreBtn" class="cta-btn" style="display:none;">Load More</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Quick Endpoints</h3>
+          <button id="loadStatsBtn" class="cta-btn">Load Statistics</button>
+          <button id="loadCategoriesBtn" class="cta-btn" style="margin-top:6px;">Load Categories</button>
+          <button id="loadErasBtn" class="cta-btn" style="margin-top:6px;">Load Eras</button>
+          <button id="loadRandomBtn" class="cta-btn" style="margin-top:6px;">Random Radio Song</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:12px;">
+        <h3>File Browser</h3>
+        <label for="filePathInput">Path</label>
+        <input id="filePathInput" type="text" value="Compilation" />
+        <button id="browseFilesBtn" class="cta-btn" style="margin-top:8px;">Browse Files for .mp3</button>
+      </div>
+      <div class="card" style="margin-top:12px;">
+        <h3>API Response</h3>
+        <div id="apiResponse">Results shown here.</div>
+      </div>
+      <div class="card" style="margin-top:12px;">
+        <h3>Recently fetched songs</h3>
+        <ul id="apiSongList" style="list-style:none; padding:0;"></ul>
+      </div>
+    </section>
+
+    <script>
+      const apiResponseText = document.getElementById('apiResponse');
+      const apiSongList = document.getElementById('apiSongList');
+      const songSearchQuery = document.getElementById('songSearchQuery');
+      const songSearchBtn = document.getElementById('songSearchBtn');
+      const loadMoreBtn = document.getElementById('loadMoreBtn');
+      const loadStatsBtn = document.getElementById('loadStatsBtn');
+      const loadCategoriesBtn = document.getElementById('loadCategoriesBtn');
+      const loadErasBtn = document.getElementById('loadErasBtn');
+      const loadRandomBtn = document.getElementById('loadRandomBtn');
+      const browseFilesBtn = document.getElementById('browseFilesBtn');
+      const filePathInput = document.getElementById('filePathInput');
+      const randomToggle = document.getElementById('randomToggle');
+
+      let currentSongPage = 1;
+      let lastSongQuery = '';
+      let randomPlaybackEnabled = false;
+      let recentFetchedSongs = [];
+      let currentFetchedIndex = -1;
+
+      function populatePlaylist(sourceArray) {
+        playlistEl.innerHTML = '';
+        selectEl.innerHTML = '';
+
+        sourceArray.forEach((src, idx) => {
+          const label = decodeURIComponent(src.split('/').pop().replace(/\.mp3$/i, ''));
+          const li = document.createElement('li');
+          li.textContent = label;
+          li.dataset.src = src;
+          li.addEventListener('click', () => playTrack(idx));
+          playlistEl.appendChild(li);
+
+          const option = document.createElement('option');
+          option.value = idx;
+          option.textContent = label;
+          selectEl.appendChild(option);
+        });
+
+        selectEl.addEventListener('change', () => playTrack(Number(selectEl.value)));
+        if (sourceArray.length > 0) playTrack(0);
+      }
+
+      function renderApiResponse(json) {
+        if (!json) {
+          apiResponseText.textContent = 'No response received';
+          return;
+        }
+        if (Array.isArray(json)) {
+          apiResponseText.textContent = `Array response (${json.length} items) - showing first 5 entries`;
+          return;
+        }
+        if (typeof json === 'object') {
+          apiResponseText.textContent = 'Object response keys: ' + Object.keys(json).slice(0, 20).join(', ');
+          return;
+        }
+        apiResponseText.textContent = `Response: ${String(json)}`;
+      }
+
+      function playSongFromFetched(index) {
+        const song = recentFetchedSongs[index];
+        if (!song || !song.url) return;
+        currentFetchedIndex = index;
+        audio.src = song.url;
+        currentTrack.textContent = `${song.title || 'Unknown'} ${song.artist ? '- ' + song.artist : ''}`;
+        highlightApiSong(index);
+        audio.play().catch(() => {});
+      }
+
+      function highlightApiSong(index) {
+        Array.from(apiSongList.children).forEach((el, idx) => {
+          if (idx === index) el.classList.add('active');
+          else el.classList.remove('active');
+        });
+      }
+
+      function addApiSong(song) {
+        const entry = document.createElement('li');
+        entry.className = 'card';
+        entry.style.cursor = 'pointer';
+        entry.textContent = `${song.title || song.name || 'Unknown'} ${song.artist ? '- ' + song.artist : ''}`;
+        const nextIndex = recentFetchedSongs.length;
+        recentFetchedSongs.push({
+          title: song.title || song.name || 'Unknown',
+          artist: song.artist || 'Unknown',
+          url: song.url || song.stream || song.file || song.path
+        });
+        entry.onclick = () => {
+          playSongFromFetched(nextIndex);
+        };
+        apiSongList.appendChild(entry);
+      }
+
+      function safeFetchJSON(url) {
+        apiResponseText.textContent = 'Loading ' + url;
+        return fetch(url)
+          .then((res) => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+          });
+      }
+
+      const hardcodedSources = [
+        "https://juicewrldapi.com/juicewrld/files/download/?path=Compilation/Lucid%20Dreams.mp3",
+        "https://juicewrldapi.com/juicewrld/files/download/?path=Compilation/All%20Girls%20Are%20the%20Same.mp3",
+        "https://juicewrldapi.com/juicewrld/files/download/?path=Compilation/Legends%20Never%20Die.mp3",
+        "https://juicewrldapi.com/juicewrld/files/download/?path=Compilation/Lean%20Wit%20Me.mp3",
+        "https://juicewrldapi.com/juicewrld/files/download/?path=Compilation/Wasted.mp3",
+        "https://juicewrldapi.com/juicewrld/files/download/?path=Compilation/Empty.mp3",
+        "https://juicewrldapi.com/juicewrld/files/download/?path=Compilation/Righteous.mp3",
+        "https://juicewrldapi.com/juicewrld/files/download/?path=Compilation/Blood%20On%20My%20Jeans.mp3",
+        "https://juicewrldapi.com/juicewrld/files/download/?path=Compilation/Stay%20High.mp3",
+        "https://juicewrldapi.com/juicewrld/files/download/?path=Compilation/Used%20To.mp3"
+      ];
+
+      populatePlaylist(hardcodedSources);
+
+      document.getElementById('playlistSearch').addEventListener('input', (e) => {
+        const query = e.target.value.trim().toLowerCase();
+        const allItems = playlistEl.querySelectorAll('li');
+        allItems.forEach((li, idx) => {
+          const text = li.textContent.toLowerCase();
+          const match = text.includes(query);
+          li.style.display = match ? '' : 'none';
+          const option = selectEl.options[idx];
+          if (option) option.style.display = match ? '' : 'none';
+        });
+      });
+
+      document.getElementById('prevTrack').addEventListener('click', () => {
+        const current = Number(selectEl.value);
+        if (!isNaN(current) && current > 0) playTrack(current - 1);
+      });
+
+      document.getElementById('nextTrack').addEventListener('click', () => {
+        const current = Number(selectEl.value);
+        const max = playlistEl.querySelectorAll('li').length - 1;
+        if (!isNaN(current) && current < max) playTrack(current + 1);
+      });
+
+      function playTrack(index) {
+        const items = playlistEl.querySelectorAll('li');
+        if (!items[index]) return;
+
+        items.forEach((node) => node.classList.remove('active'));
+        const node = items[index];
+        node.classList.add('active');
+
+        const src = node.dataset.src;
+        audio.src = src;
+        currentTrack.textContent = node.textContent;
+        selectEl.value = index;
+        audio.play().catch(() => {});
+      }
+
+      audio.onended = () => {
+        if (randomPlaybackEnabled && recentFetchedSongs.length > 0) {
+          const nextIndex = Math.floor(Math.random() * recentFetchedSongs.length);
+          playSongFromFetched(nextIndex);
+          return;
+        }
+        const current = Number(selectEl.value);
+        const items = playlistEl.querySelectorAll('li');
+        if (items.length === 0) return;
+        const nextIndex = (isNaN(current) || current + 1 >= items.length) ? 0 : current + 1;
+        playTrack(nextIndex);
+      };
+
+      function showSongs(songs, append = false) {
+        if (!append) {
+          apiSongList.innerHTML = '';
+          recentFetchedSongs = [];
+          currentFetchedIndex = -1;
+        }
+        if (!Array.isArray(songs) || songs.length === 0) {
+          if (!append) apiSongList.innerHTML = '<li>No songs found</li>';
+          loadMoreBtn.style.display = 'none';
+          return;
+        }
+
+        songs.slice(0, 20).forEach((s) => {
+          addApiSong({
+            title: s.title || s.name || s.display_name || s.song || s.song_name,
+            artist: s.artist || s.primary_artist || s.artist_name,
+            url: s.url || s.stream || (s.file ? `https://juicewrldapi.com/juicewrld/files/download/?path=${encodeURIComponent(s.file)}` : ''),
+          });
+        });
+
+        loadMoreBtn.style.display = songs.length >= 20 ? 'inline-block' : 'none';
+      }
+
+      function searchSongs(query, page = 1) {
+        lastSongQuery = query;
+        currentSongPage = page;
+
+        if (!query) return;
+        const endpoint = `https://juicewrldapi.com/juicewrld/songs/?search=${encodeURIComponent(query)}&page=${page}`;
+        safeFetchJSON(endpoint)
+          .then((data) => {
+            renderApiResponse(data);
+            const results = data.results || data.songs || [];
+            showSongs(results, page > 1);
+          })
+          .catch((err) => {
+            apiResponseText.textContent = 'Error: ' + err.message;
+          });
+      }
+
+      songSearchBtn.addEventListener('click', () => {
+        const q = songSearchQuery.value.trim();
+        if (!q) return;
+        searchSongs(q, 1);
+      });
+
+      loadMoreBtn.addEventListener('click', () => {
+        const nextPage = currentSongPage + 1;
+        searchSongs(lastSongQuery, nextPage);
+      });
+
+      randomToggle.addEventListener('click', () => {
+        randomPlaybackEnabled = !randomPlaybackEnabled;
+        randomToggle.textContent = `Random Play: ${randomPlaybackEnabled ? 'On' : 'Off'}`;
+      });
+
+      loadStatsBtn.addEventListener('click', () => {
+        safeFetchJSON('https://juicewrldapi.com/juicewrld/stats/')
+          .then((data) => renderApiResponse(data))
+          .catch((err) => apiResponseText.textContent = 'Error: ' + err.message);
+      });
+
+      loadCategoriesBtn.addEventListener('click', () => {
+        safeFetchJSON('https://juicewrldapi.com/juicewrld/categories/')
+          .then((data) => renderApiResponse(data))
+          .catch((err) => apiResponseText.textContent = 'Error: ' + err.message);
+      });
+
+      loadErasBtn.addEventListener('click', () => {
+        safeFetchJSON('https://juicewrldapi.com/juicewrld/eras/')
+          .then((data) => renderApiResponse(data))
+          .catch((err) => apiResponseText.textContent = 'Error: ' + err.message);
+      });
+
+      loadRandomBtn.addEventListener('click', () => {
+        safeFetchJSON('https://juicewrldapi.com/juicewrld/radio/random/')
+          .then((data) => {
+            renderApiResponse(data);
+            const song = data.song || data;
+            showSongs([song]);
+          })
+          .catch((err) => apiResponseText.textContent = 'Error: ' + err.message);
+      });
+
+      browseFilesBtn.addEventListener('click', () => {
+        const path = filePathInput.value.trim() || 'Compilation';
+        const endpoint = `https://juicewrldapi.com/juicewrld/files/browse/?path=${encodeURIComponent(path)}&search=.mp3`;
+        safeFetchJSON(endpoint)
+          .then((data) => {
+            renderApiResponse(data);
+            const items = (data.items || []).filter((i) => i.type === 'file');
+            showSongs(items.map((i) => ({ title: i.name, url: `https://juicewrldapi.com/juicewrld/files/download/?path=${encodeURIComponent(i.path)}` })));
+          })
+          .catch((err) => apiResponseText.textContent = 'Error: ' + err.message);
+      });
+
+      const validUsers = {
+        'juicelord': 'x100',
+        'admin': 'pa55word',
+        'guest': 'welcome1'
+      };
+
+      function setAuthState(isAuth, username) {
+        if (isAuth) {
+          localStorage.setItem('isAuthenticated', 'true');
+          localStorage.setItem('authUser', username);
+          document.getElementById('authModal').style.display = 'none';
+          document.body.style.overflow = 'auto';
+          refreshNavAuth();
+        } else {
+          localStorage.removeItem('isAuthenticated');
+          localStorage.removeItem('authUser');
+          document.getElementById('authModal').style.display = 'flex';
+          document.body.style.overflow = 'hidden';
+          refreshNavAuth();
+        }
+      }
+
+      function checkAuth() {
+        const isAuth = localStorage.getItem('isAuthenticated') === 'true';
+        if (isAuth) {
+          document.getElementById('authModal').style.display = 'none';
+          document.body.style.overflow = 'auto';
+          return true;
+        }
+        document.getElementById('authModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        return false;
+      }
+
+      document.getElementById('authSubmit').addEventListener('click', () => {
+        const user = document.getElementById('authUser').value.trim();
+        const pass = document.getElementById('authPass').value;
+        const msg = document.getElementById('authMessage');
+
+        if (validUsers[user] && validUsers[user] === pass) {
+          msg.style.color = '#86efac';
+          msg.textContent = 'Welcome, ' + user + '! Redirecting...';
+          setTimeout(() => setAuthState(true, user), 500);
+          return;
+        }
+
+        msg.style.color = '#fca5a5';
+        msg.textContent = 'Access denied. Invalid user or password.';
+      });
+
+      function isAuthenticated() {
+        return localStorage.getItem('isAuthenticated') === 'true';
+      }
+
+      function setAuthUser(user) {
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('authUser', user);
+      }
+
+      function clearAuth() {
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('authUser');
+      }
+
+      function getAuthUser() {
+        return localStorage.getItem('authUser') || '';
+      }
+
+      function enforceAuth() {
+        if (!isAuthenticated()) {
+          window.location = 'index.html';
+          return false;
+        }
+        return true;
+      }
+
+      function refreshNavAuth() {
+        const userText = document.getElementById('navUserText');
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (isAuthenticated()) {
+          userText.textContent = `👋 ${getAuthUser()}`;
+          userText.style.display = 'inline-block';
+          logoutBtn.style.display = 'inline-block';
+        } else {
+          userText.style.display = 'none';
+          logoutBtn.style.display = 'none';
+        }
+      }
+
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        clearAuth();
+        window.location = 'index.html';
+      });
+
+      if (enforceAuth()) {
+        checkAuth();
+        refreshNavAuth();
+      }
+    </script>
+
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div>
+      <h4 class="card">Project Alpha</h4><br><br>
+      <a>A secure, centralized portal for accessing all content.</a>
+      <!-- <p>Emblems: ★ ✪ ✔</p> -->
+    </div>
+    <div>
+      <h4 class="card">Quick Links</h4><br><br>
+      <a href="index.html">Home</a><br><br>
+      <a href="about.html">About</a><br><br>
+      <a href="sources.html">Music</a><br><br>
+      <a href="downloads.html">Downloads</a><br><br>
+      <a href="terms-of-service.html">Terms</a><br><br>
+      <a href="privacy-policy.html">Privacy</a><br><br>
+    </div>
+    <div>
+      <h4 class="card">Support</h4><br>
+      <p>✉️ <a href="mailto:support@projectalpha.example">support@projectalpha.example</a></p>
+      <p>☎️ <a href="tel:+1234567890">+1-234-567-890</a></p>
+    </div>
+  </div>
+  <small>© 2026 Project Alpha • Auth Persists Until Logout • Secure Session ✪</small>
+</footer>
+  </main>
+</body>
+</html>

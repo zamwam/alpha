@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About - Project Alpha</title>
+<meta name="description" content="About Project Alpha portal for Juice WRLD content.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="about.html">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="nav.css">
+<link rel="stylesheet" href="main.css">
+</head>
+<body>
+<nav class="top-nav">
+  <div class="nav-brand"><a href="index.html">Project Alpha</a></div>
+  <input type="checkbox" id="nav-toggle" class="nav-toggle">
+  <label for="nav-toggle" class="nav-toggle-label">☰</label>
+  <ul class="nav-links">
+    <li id="navUserText" style="color:#38bdf8; display:none; font-weight:bold;"></li>
+    <li><button id="logoutBtn" class="cta-btn" style="display:none;">Logout</button></li>
+    <li><a href="index.html"><span class="nav-icon">🏠</span>Home</a></li>
+    <li><a href="about.html"><span class="nav-icon">ℹ️</span>About</a></li>
+    <li><a href="sources.html"><span class="nav-icon">🎵</span>Music</a></li>
+    <li><a href="downloads.html"><span class="nav-icon">📦</span>Downloads</a></li>
+    <li><a href="terms-of-service.html"><span class="nav-icon">📜</span>Terms</a></li>
+    <li><a href="privacy-policy.html"><span class="nav-icon">🔒</span>Privacy</a></li>
+    <li><a href="mailto:support@projectalpha.example"><span class="nav-icon">✉️</span>Support</a></li>
+    <li><a href="tel:+1234567890"><span class="nav-icon">☎️</span>+1-234-567-890</a></li>
+  </ul>
+</nav>
+<main>
+  <h1>Project Alpha</h1>
+
+  <p>
+    Project Alpha is a private, experimental media and utility platform built around curated Juice WRLD content. 
+    It combines locally stored media, externally sourced data, and automated tools into one streamlined portal 
+    designed for fast access, simplicity, and control.
+  </p>
+
+  <p>
+    The platform aggregates content from multiple structured and unstructured sources, including locally maintained 
+    JSON libraries, publicly available API endpoints, and selectively indexed GitHub repositories. Everything is 
+    organized into a unified interface to eliminate the need for manual searching across different platforms.
+  </p>
+
+  <div class="card pulseCard">
+    <h2>Core Features</h2>
+    <ul>
+      <li>Access a gated portal using a lightweight authentication system</li>
+      <li>Stream and manage locally stored MP3 files through an integrated player</li>
+      <li>Interact with scraped and structured Juice WRLD API data including search, artist stats, eras, and categorized collections</li>
+      <li>Explore a built-in file browser with direct streaming and download capabilities</li>
+      <li>Retrieve and download selected GitHub repositories from indexed sources such as KAXXX0, zamwam, and zennax</li>
+      <li>Quick navigation between music, downloads, and utilities without leaving the platform</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Content System</h2>
+    <p>
+      Project Alpha operates by combining multiple data pipelines. Local JSON files are used for fast, reliable playback 
+      and indexing, while external API data is parsed and structured for browsing and discovery. GitHub repositories are 
+      selectively indexed and made accessible through direct download tools, reducing the need to manually locate files.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Authentication</h2>
+    <p>
+      Access to the platform is controlled through a simple client-side authentication system. Approved users can log in 
+      using predefined credentials. Once authenticated, session data is stored locally in the browser using localStorage, 
+      allowing persistent access until the user manually logs out.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Purpose</h2>
+    <p>
+      This project is designed as a controlled environment for organizing, testing, and interacting with media content 
+      and external data sources. It prioritizes speed, minimal UI friction, and direct access over unnecessary complexity.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>System Behavior</h2>
+    <ul>
+      <li>Login state persists across sessions until manually cleared</li>
+      <li>Navigation elements dynamically update based on authentication status</li>
+      <li>Content access is restricted to authenticated users only</li>
+      <li>All interactions are handled client-side for faster response times</li>
+    </ul>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div>
+      <h4 class="card">Project Alpha</h4><br><br>
+      <a>A secure, centralized portal for accessing all content.</a>
+      <!-- <p>Emblems: ★ ✪ ✔</p> -->
+    </div>
+    <div>
+      <h4 class="card">Quick Links</h4><br><br>
+      <a href="index.html">Home</a><br><br>
+      <a href="about.html">About</a><br><br>
+      <a href="sources.html">Music</a><br><br>
+      <a href="downloads.html">Downloads</a><br><br>
+      <a href="terms-of-service.html">Terms</a><br><br>
+      <a href="privacy-policy.html">Privacy</a><br><br>
+    </div>
+    <div>
+      <h4 class="card">Support</h4><br>
+      <p>✉️ <a href="mailto:support@projectalpha.example">support@projectalpha.example</a></p>
+      <p>☎️ <a href="tel:+1234567890">+1-234-567-890</a></p>
+    </div>
+  </div>
+  <small>© 2026 Project Alpha • Auth Persists Until Logout • Secure Session ✪</small>
+</footer>
+<script>
+  function isAuthenticated(){ return localStorage.getItem('isAuthenticated') === 'true'; }
+  function getAuthUser(){ return localStorage.getItem('authUser') || ''; }
+  function logout(){ localStorage.removeItem('isAuthenticated'); localStorage.removeItem('authUser'); window.location='index.html'; }
+  function requireAuth(){ if (!isAuthenticated()) { window.location='index.html'; } }
+  function refreshNav(){
+    const navUserText = document.getElementById('navUserText');
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (isAuthenticated()) {
+      navUserText.textContent = `👋 ${getAuthUser()}`;
+      navUserText.style.display = 'inline-block';
+      logoutBtn.style.display = 'inline-block';
+    } else {
+      navUserText.style.display = 'none';
+      logoutBtn.style.display = 'none';
+    }
+  }
+  requireAuth();
+  refreshNav();
+  document.getElementById('logoutBtn').addEventListener('click', logout);
+</script>
+<script src="js/script.js"></script>
+</body>
+</html>

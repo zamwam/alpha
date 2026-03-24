@@ -1,0 +1,12 @@
+{
+  "cachedStats": {
+    "totalSongs": 1234,
+    "categories": ["Rap", "Hip-Hop", "Alternative"],
+    "lastUpdated": "2026-03-23"
+  },
+  "cachedEras": [
+    {"name": "Early Career", "year": 2018},
+    {"name": "Breakthrough", "year": 2019},
+    {"name": "Legacy", "year": 2020}
+  ]
+}
