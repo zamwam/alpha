@@ -41,7 +41,7 @@ button, .cta-btn {
   transition: transform 0.15s ease, background .2s ease, border .2s ease;
 }
 button:hover, .cta-btn:hover {
-  background: #7ea7ff;
+  background: #263961;
   border-color: #1d4ed8;
   transform: translateY(-1px);
 }
